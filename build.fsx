@@ -16,16 +16,14 @@ Target.initEnvironment ()
 
 // Git configuration (used for publishing in gh-pages branch)
 // The profile where the project is posted
-let gitOwner = "nanhasa"
+let gitOwner = "ssiltanen"
 let gitHome = "https://github.com/" + gitOwner
 // The name of the project on GitHub
 let gitProjectName = "MineSweeper"
 // The name of the GitHub repo subdirectory to publish slides to
 let gitSubDir = ""
 
-let serverPath = Path.getFullName "./src/Server"
-let clientPath = Path.getFullName "./src/Client"
-let clientDeployPath = Path.combine clientPath "deploy"
+let deployPath = Path.getFullName "./deploy"
 let tempDocsRoot = Path.getFullName "./temp/gh-pages"
 let bin = Path.getFullName "./src/bin"
 let obj = Path.getFullName "./src/obj"
@@ -53,7 +51,7 @@ let runTool cmd args workingDir =
     |> ignore
 
 Target.create "Clean" (fun _ ->
-    [ clientDeployPath; tempDocsRoot; bin; obj ]
+    [ deployPath; tempDocsRoot; bin; obj ]
     |> Shell.cleanDirs
 )
 
@@ -65,13 +63,11 @@ Target.create "Release" (fun _ ->
     Git.Repository.cloneSingleBranch "" (gitHome + "/" + gitProjectName + ".git") "gh-pages" tempDocsRoot
     let tempDocsDir = Path.combine tempDocsRoot gitSubDir
     Git.Repository.fullclean tempDocsDir
-    Shell.copyRecursive clientDeployPath tempDocsDir true |> ignore
+    Shell.copyRecursive deployPath tempDocsDir true |> ignore
     Git.Staging.stageAll tempDocsRoot
     Git.Commit.exec tempDocsRoot "Update static files"
     Git.Branches.push tempDocsRoot
 )
-
-open Fake.Core.TargetOperators
 
 "Clean"
     ==> "Build"
