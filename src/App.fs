@@ -58,9 +58,13 @@ let updateInputSetting state setting =
 
 let assignMines count cells =
     let setMine cell = { cell with isMined = true }
-    let cells = cells |> List.sortBy (fun _ -> rand.Next(0, 1000)) |> List.sortBy (fun _ -> rand.Next(0,1000)) |> List.sortBy (fun _ -> rand.Next(0,1000))
-    let mined = cells |> List.take count |> List.map setMine
-    mined @ (cells |> List.skip count) |> List.sortBy (fun c -> c.point.y, c.point.x)
+    let shuffledCells = 
+        cells // Shuffle cells a few times to make sure they are somewhat shuffled
+        |> List.sortBy (fun _ -> rand.Next(0, 1000)) 
+        |> List.sortBy (fun _ -> rand.Next(0, 1000)) 
+        |> List.sortBy (fun _ -> rand.Next(0, 1000))
+    let mined = shuffledCells |> List.take count |> List.map setMine
+    mined @ (shuffledCells |> List.skip count) |> List.sortBy (fun c -> c.point.y, c.point.x)
 
 let newGame (settings : Settings) =
     let axisPoints count = [ 0 .. (count - 1) ]
@@ -147,10 +151,12 @@ let openCellAndEmptyAdjacentCells state point =
     elif countUnopenedAndFlaggedCells state = state.currentSettings.mines then
         state, Cmd.ofMsg GameWon
     else
-        let cellIsUnopened cell = match cell.state with | Unopened -> true | _ -> false
+        let cellIsUnopenedAndNotMined cell = 
+            if cell.isMined then false 
+            else  match cell.state with | Unopened -> true | _ -> false
         let rec openAdjacentEmptyCells point state =
             adjacentCells state point
-            |> List.where cellIsUnopened
+            |> List.where cellIsUnopenedAndNotMined
             |> List.fold (fun accState cell ->
                 let count = countAdjacentMines accState cell.point
                 if count > 0 then openCell accState cell.point
@@ -306,7 +312,6 @@ let render (state: State) (dispatch: Msg -> unit) =
                             prop.classes [ "column" ]
                             prop.children [ renderGrid state dispatch ]
                         ]
-                        //Html.div [ prop.classes [ "column" ] ]
                     ]
                 ]
             ]
