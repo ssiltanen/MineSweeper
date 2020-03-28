@@ -1,17 +1,6 @@
-# Feliz Template
+# Mine Sweeper
 
-This template gets you up and running with a simple web app using [Fable](http://fable.io/), [Elmish](https://fable-elmish.github.io/) and [Feliz](https://github.com/Zaid-Ajaj/Feliz).
-
-## Requirements
-
-* [dotnet SDK](https://www.microsoft.com/net/download/core) 2.0.0 or higher
-* [node.js](https://nodejs.org) 10.0.0 or higher
-
-
-## Editor
-
-To write and edit your code, you can use either VS Code + [Ionide](http://ionide.io/), Emacs with [fsharp-mode](https://github.com/fsharp/emacs-fsharp-mode), [Rider](https://www.jetbrains.com/rider/) or Visual Studio.
-
+Made with F# as front end dev practice
 
 ## Development
 
@@ -29,7 +18,7 @@ npm run build
 ```
 This command builds the application and puts the generated files into the `deploy` directory (can be overwritten in webpack.config.js).
 
-### Tests
+### Tests (No tests currently)
 
 The template includes a test project that ready to go which you can either run in the browser in watch mode or run in the console using node.js and mocha. To run the tests in watch mode:
 ```
