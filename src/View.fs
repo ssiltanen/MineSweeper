@@ -67,7 +67,7 @@ let renderHero state =
                                     prop.className "navbar-item"
                                     prop.children [
                                         Html.a [
-                                            prop.className "button is-info is-inverted"
+                                            prop.className "button is-black is-inverted"
                                             prop.href "https://github.com/ssiltanen/MineSweeper"
                                             prop.children [
                                                 Html.span [
