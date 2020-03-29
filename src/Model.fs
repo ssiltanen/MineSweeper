@@ -7,7 +7,7 @@ type Cell = { point : Point; state : RenderState; adjacentMines : int; isMined :
     static member Create point = { point = point; state = Unopened; adjacentMines = 0; isMined = false }
 
 type Settings = { width : int; height : int; mines : int } with
-    static member Default = { width = 30; height = 30; mines = 5 }
+    static member Default = { width = 20; height = 20; mines = 80 }
 
 let maxWidth = 40
 let maxHeight = 40

@@ -64,7 +64,7 @@ let newGame (settings : Settings) =
 let newGameAsync (settings : Settings) =
     let asyncInit (dispatch: Msg -> unit) : unit =
         async {
-            do! Async.Sleep 20
+            do! Async.Sleep 40
             let status = newGame settings
             dispatch (Initialized status)
         }
