@@ -1,5 +1,7 @@
 module Model
 
+open System
+
 type RenderState = Unopened | Empty | HasAdjacentMines of int | Flagged | Mine
 type Point = { x : int; y : int } with
     static member Create (x, y) = { x = x; y = y }
@@ -23,7 +25,9 @@ type State =
       currentSettings : Settings
       cells : Cell list
       openedCellCount : int
-      status : GameStatus }
+      status : GameStatus
+      startTime : DateTime
+      currentTime : DateTime }
 
 type InputSetting =
     | Width of int

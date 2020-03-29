@@ -1,5 +1,6 @@
 module App
 
+open System
 open Elmish
 open Model
 open Helpers
@@ -14,6 +15,7 @@ type Msg =
     | SetWidth of int
     | SetHeight of int
     | SetMinesCount of int
+    | Tick
 
 let updateInputSetting state setting =
     match setting with
@@ -59,14 +61,16 @@ let newGame (settings : Settings) =
       currentSettings = settings
       cells = cells
       openedCellCount = 0
-      status = InProgress }
+      status = InProgress
+      startTime = DateTime.Now
+      currentTime = DateTime.Now }
 
 let newGameAsync (settings : Settings) =
     let asyncInit (dispatch: Msg -> unit) : unit =
         async {
             do! Async.Sleep 40
-            let status = newGame settings
-            dispatch (Initialized status)
+            let freshState = newGame settings
+            dispatch (Initialized freshState)
         }
         |> Async.StartImmediate
     Cmd.ofSub asyncInit
@@ -158,8 +162,18 @@ let openAvailableCells state point =
             then state, Cmd.ofMsg GameWon
             else state, Cmd.none
 
+let tick =
+    let step (dispatch: Msg -> unit) : unit = 
+        async {
+            do! Async.Sleep 1000
+            dispatch Tick
+        }
+        |> Async.StartImmediate
+    
+    Cmd.ofSub step
+
 let init () =
-    newGame Settings.Default, Cmd.none
+    newGame Settings.Default, Cmd.ofMsg Tick
 
 let update (msg: Msg) (state: State) =
     match msg with
@@ -174,4 +188,8 @@ let update (msg: Msg) (state: State) =
     | SetWidth width -> updateInputSetting state (Width width), Cmd.none
     | SetHeight height -> updateInputSetting state (Height height), Cmd.none
     | SetMinesCount mines -> updateInputSetting state (Mines mines), Cmd.none
-    | Initialized state -> state, Cmd.none
+    | Initialized state -> state, tick
+    | Tick -> 
+        match state.status with
+        | InProgress -> { state with currentTime = DateTime.Now }, tick
+        | _ -> state, Cmd.none

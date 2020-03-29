@@ -95,9 +95,17 @@ let renderHero state =
                             prop.className "title is-2"
                             prop.text "Mine Sweeper"
                         ]
-                        Html.h1 [ 
+                        Html.p [ 
                             prop.className "subtitle"
+                            prop.style [ style.marginBottom 0 ]
                             prop.text (sprintf "%i Mines left" (state.currentSettings.mines - countFlaggedCells state))
+                        ]
+                        Html.p [ 
+                            prop.className "subtitle"
+                            prop.text (
+                                sprintf "%i min %i s" 
+                                    (totalSecondsDifference state.startTime state.currentTime / 60)
+                                    (totalSecondsDifference state.startTime state.currentTime % 60))
                         ]
                     ]
                 ]
