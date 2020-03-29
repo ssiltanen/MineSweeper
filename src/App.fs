@@ -87,6 +87,9 @@ let invalidSettings settings =
     || settings.height <= 0
     || settings.mines <= 0
 
+let getCell point =
+    List.find (fun c -> c.point = point)
+
 let updateCell (f : Cell -> Cell) point =
     List.map (fun c -> if c.point = point then f c else c)
 
@@ -106,38 +109,55 @@ let countFlaggedCells state =
         | _ -> None)
     |> List.length
 
-let openCell state point =
-    let openCell cell =
-        let newState =
-            if cell.isMined then Mine
-            else 
-                if cell.adjacentMines = 0 then Empty
-                else HasAdjacentMines cell.adjacentMines 
-        { cell with state = newState }
-    { state with 
-        openedCellCount = state.openedCellCount + 1
-        cells = state.cells |> updateCell openCell point}
+let openCell state cell =
+    match cell.state with
+    | Unopened ->
+        let openCell cell =
+            let newState =
+                if cell.isMined then Mine
+                else 
+                    if cell.adjacentMines = 0 then Empty
+                    else HasAdjacentMines cell.adjacentMines 
+            { cell with state = newState }
+        let cells = state.cells |> updateCell openCell cell.point
+        let cell = getCell cell.point cells
+        { state with 
+            openedCellCount = state.openedCellCount + 1
+            cells = cells }, cell
+    | _ -> state, cell
 
-let openCellAndEmptyAdjacentCells state point =
-    let state = openCell state point
-    if state.cells |> List.exists (fun cell -> cell.point = point && cell.isMined) then 
-        state, Cmd.ofMsg GameLost
-    elif List.length state.cells = state.openedCellCount + state.currentSettings.mines then
-        state, Cmd.ofMsg GameWon
+let openMinedCells state =
+    state.cells
+    |> List.where (fun cell -> cell.isMined)
+    |> List.fold (fun a c -> openCell a c |> fst) state
+
+let openAvailableCells state point =
+    let (state, openedCell) = getCell point state.cells |> openCell state
+    if openedCell.isMined then 
+        openMinedCells state, Cmd.ofMsg GameLost
     else
         let cellIsUnopened cell = match cell.state with | Unopened -> true | _ -> false
-        let rec openAdjacentEmptyCells point state =
+        let rec openAdjacentEmptyCells point state processedCells =
             adjacentCells state.cells point
             |> List.where cellIsUnopened
-            |> List.fold (fun accState cell ->
-                let newState = openCell accState cell.point
-                if cell.adjacentMines = 0 then openAdjacentEmptyCells cell.point newState
-                else newState) state
+            |> List.fold (fun (accState, processed) cell ->
+                if processed |> List.exists (fun c -> c.point = cell.point) then accState, processed
+                else
+                    let (newState, cell) = openCell accState cell
+                    let processed = cell :: processed
+                    if cell.adjacentMines = 0 
+                    then openAdjacentEmptyCells cell.point newState processed
+                    else newState, processed) (state, processedCells)
 
-        match state.cells |> List.pick (fun cell -> if cell.point = point then Some cell.state else None) with
-        | Empty -> openAdjacentEmptyCells point state, Cmd.none
-        | HasAdjacentMines _ -> state, Cmd.none
-        | state -> failwithf "Error: Opened cell had invalid state %A" state
+        match openedCell.state with
+        | Empty -> openAdjacentEmptyCells point state [ openedCell ] |> fst
+        | HasAdjacentMines _ -> state
+        | state -> failwithf "Opened cell had invalid state %A" state
+        |> fun state -> 
+            printfn "%i = %i + %i" (List.length state.cells)  state.openedCellCount  state.currentSettings.mines
+            if List.length state.cells = state.openedCellCount + state.currentSettings.mines
+            then printfn "WON"; state, Cmd.ofMsg GameWon
+            else printfn "NOT WON";state, Cmd.none
 
 let init () =
     newGame Settings.Default, Cmd.none
@@ -147,7 +167,7 @@ let update (msg: Msg) (state: State) =
     | ToggleFlag (point, Unopened) -> flagCell state point, Cmd.none
     | ToggleFlag (point, Flagged) -> unflagCell state point, Cmd.none
     | ToggleFlag _ -> state, Cmd.none
-    | OpenCell (point, Unopened) -> openCellAndEmptyAdjacentCells state point
+    | OpenCell (point, Unopened) -> openAvailableCells state point
     | OpenCell _ -> state, Cmd.none
     | NewGame -> { state with status = Initializing }, newGameAsync state.inputSettings
     | GameLost -> { state with status = Lost }, Cmd.none
