@@ -10,7 +10,7 @@ open Elmish.Debug
 open Elmish.HMR
 
 // App
-Program.mkProgram App.init App.update App.render
+Program.mkProgram App.init App.update View.render
 #if DEBUG
 |> Program.withDebugger
 #endif
