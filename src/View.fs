@@ -18,7 +18,7 @@ let cellIconClass = function
 let renderCell isGameOver dispatch cell =
     Html.button [
         prop.classes [ "button"; cellClass cell.state ]
-        prop.style [ style.margin 1; style.height 30; style.width 30 ]
+        prop.style [ style.margin 80; style.height 20; style.width 20 ]
         prop.onContextMenu (fun ev -> ev.preventDefault(); ToggleFlag (cell.point, cell.state) |> dispatch)
         prop.onClick (fun _ -> OpenCell (cell.point, cell.state) |> dispatch)
         prop.disabled isGameOver
