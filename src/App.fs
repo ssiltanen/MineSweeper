@@ -154,10 +154,9 @@ let openAvailableCells state point =
         | HasAdjacentMines _ -> state
         | state -> failwithf "Opened cell had invalid state %A" state
         |> fun state -> 
-            printfn "%i = %i + %i" (List.length state.cells)  state.openedCellCount  state.currentSettings.mines
             if List.length state.cells = state.openedCellCount + state.currentSettings.mines
-            then printfn "WON"; state, Cmd.ofMsg GameWon
-            else printfn "NOT WON";state, Cmd.none
+            then state, Cmd.ofMsg GameWon
+            else state, Cmd.none
 
 let init () =
     newGame Settings.Default, Cmd.none
