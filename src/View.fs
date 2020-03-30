@@ -6,13 +6,14 @@ open Model
 open Helpers
 
 let cellClass = function
-    | Unopened | Flagged -> "has-background-grey-lighter"
+    | Unopened | Flagged _ -> "has-background-grey-lighter"
     | Empty | HasAdjacentMines _ -> "has-background-white-bis"
     | Mine -> "is-danger"
 
 let cellIconClass = function
     | Unopened | Empty | HasAdjacentMines _ -> ""
-    | Flagged -> "fas fa-exclamation"
+    | Flagged ExclamationPoint -> "fas fa-exclamation"
+    | Flagged QuestionMark -> "fas fa-question"
     | Mine -> "fas fa-skull-crossbones"
 
 let renderCell isGameOver dispatch cell =

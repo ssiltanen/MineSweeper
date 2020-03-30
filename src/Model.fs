@@ -2,7 +2,8 @@ module Model
 
 open System
 
-type RenderState = Unopened | Empty | HasAdjacentMines of int | Flagged | Mine
+type Flag = ExclamationPoint | QuestionMark
+type RenderState = Unopened | Empty | HasAdjacentMines of int | Flagged of Flag | Mine
 type Point = { x : int; y : int } with
     static member Create (x, y) = { x = x; y = y }
 type Cell = { point : Point; state : RenderState; adjacentMines : int; isMined : bool } with
