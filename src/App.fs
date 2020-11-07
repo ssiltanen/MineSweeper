@@ -97,19 +97,23 @@ let getCell point =
 let updateCell (f : Cell -> Cell) point =
     List.map (fun c -> if c.point = point then f c else c)
 
-let flagCell state point =
-    let flag cell = { cell with state = Flagged }
+let flagCellWithQuestionMark state point =
+    let flag cell = { cell with state = Flagged QuestionMark }
+    { state with cells = state.cells |> updateCell flag point }
+
+let flagCellWithExclamationPoint state point =
+    let flag cell = { cell with state = Flagged ExclamationPoint }
     { state with cells = state.cells |> updateCell flag point }
 
 let unflagCell state point =
     let unflag cell = { cell with state = Unopened }
     { state with cells = state.cells |> updateCell unflag point }
 
-let countFlaggedCells state =
+let countExclamationFlaggedCells state =
     state.cells 
     |> List.choose (fun cell -> 
         match cell.state with
-        | Flagged -> Some cell
+        | Flagged ExclamationPoint -> Some cell
         | _ -> None)
     |> List.length
 
@@ -177,8 +181,9 @@ let init () =
 
 let update (msg: Msg) (state: State) =
     match msg with
-    | ToggleFlag (point, Unopened) -> flagCell state point, Cmd.none
-    | ToggleFlag (point, Flagged) -> unflagCell state point, Cmd.none
+    | ToggleFlag (point, Unopened) -> flagCellWithExclamationPoint state point, Cmd.none
+    | ToggleFlag (point, Flagged ExclamationPoint) -> flagCellWithQuestionMark state point, Cmd.none
+    | ToggleFlag (point, Flagged QuestionMark) -> unflagCell state point, Cmd.none
     | ToggleFlag _ -> state, Cmd.none
     | OpenCell (point, Unopened) -> openAvailableCells state point
     | OpenCell _ -> state, Cmd.none

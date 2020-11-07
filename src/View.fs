@@ -99,7 +99,7 @@ let renderHero state =
                         Html.p [ 
                             prop.className "subtitle"
                             prop.style [ style.marginBottom 0 ]
-                            prop.text (sprintf "%i Mines left" (state.currentSettings.mines - countFlaggedCells state))
+                            prop.text (sprintf "%i Mines left" (state.currentSettings.mines - countExclamationFlaggedCells state))
                         ]
                         Html.p [ 
                             prop.className "subtitle"
